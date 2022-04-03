@@ -1,0 +1,118 @@
+name: Rust Build and Test
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macOS-latest
+          - windows-latest
+        rust:
+          - stable
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Rust Version
+        run: rustc --version
+      - name: Cache cargo registry
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-cargo-registry
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+      - name: Cache cargo index
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-cargo-git
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+      - name: Cache cargo build
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-target
+        with:
+          path: target
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+      - name: Run cargo build (default)
+        run: cargo build --release
+      - name: Run cargo build (--all-features)
+        run: cargo build --release --all-features
+      - name: Run cargo build (--no-default-features)
+        run: cargo build --release --no-default-features
+  test:
+    name: Test
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macOS-latest
+          - windows-latest
+        rust:
+          - stable
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Rust Version
+        run: rustc --version
+      - name: Cache cargo registry
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-cargo-registry
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+      - name: Cache cargo index
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-cargo-git
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+      - name: Cache cargo build
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-target
+        with:
+          path: target
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+      - name: Run cargo check (--all-features)
+        run: cargo check --all-features
+      - name: Run cargo test (default)
+        run: cargo test
+      - name: Run cargo test (--all-features)
+        run: cargo test --all-features
+      - name: Run cargo test (--no-default-features)
+        run: cargo test --no-default-features
