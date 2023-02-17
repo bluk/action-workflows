@@ -1,5 +1,8 @@
 name: Rust Clippy
 
+permissions:
+  contents: read
+
 on:
   workflow_call:
 
@@ -18,44 +21,11 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Install toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
           toolchain: ${{ matrix.rust }}
-          override: true
           components: clippy
-      - name: Install clippy
-        run: rustup component add clippy
-      - name: Cache cargo registry
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-cargo-registry
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-      - name: Cache cargo index
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-cargo-git
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-      - name: Cache cargo build
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-target
-        with:
-          path: target
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-      - name: Run cargo clippy
-        uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features
+      - run: cargo clippy --all-features --all-targets

@@ -1,5 +1,8 @@
 name: Rust Build and Test
 
+permissions:
+  contents: read
+
 on:
   workflow_call:
 
@@ -18,41 +21,14 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
+          persist-credentials: false
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
           toolchain: ${{ matrix.rust }}
-          override: true
       - name: Rust Version
         run: rustc --version
-      - name: Cache cargo registry
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-cargo-registry
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-      - name: Cache cargo index
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-cargo-git
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-      - name: Cache cargo build
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-target
-        with:
-          path: target
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
       - name: Run cargo build (default)
         run: cargo build --release
       - name: Run cargo build (--all-features)
@@ -73,41 +49,14 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
-      - name: Install toolchain
-        uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
+          persist-credentials: false
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
           toolchain: ${{ matrix.rust }}
-          override: true
       - name: Rust Version
         run: rustc --version
-      - name: Cache cargo registry
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-cargo-registry
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-      - name: Cache cargo index
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-cargo-git
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-      - name: Cache cargo build
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-target
-        with:
-          path: target
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Cargo.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
       - name: Run cargo check (--all-features)
         run: cargo check --all-features
       - name: Run cargo test (default)
